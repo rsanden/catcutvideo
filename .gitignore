@@ -1,3 +1,7 @@
+# Script-generated files
+/buildvideo.bash
+/segments.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

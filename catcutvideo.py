@@ -83,49 +83,53 @@ def make_ffmpeg_cmd(videofile, timetup, N, rot):
     cmd = """ ffmpeg -i {} -ss {} {} -c:a copy -c:v {} {} {} segment-{:03d}.mp4 """.format(vpath(videofile), start, end_txt, codec, vf_txt, meta_txt, N)
     return cmd
 
-elements = []
-with open(LISTFILE, 'r') as fp:
-    for line in fp:
-        element = None
-        line = line.strip()
-        if not line or line.startswith('#'):
-            continue
+def generate_buildvideo_script(listfile):
+    elements = []
+    with open(listfile, 'r') as fp:
+        for line in fp:
+            element = None
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
 
-        pieces = line.split(maxsplit=1)
-        if len(pieces) == 1:
-            continue
-        videofile = pieces[0]
+            pieces = line.split(maxsplit=1)
+            if len(pieces) == 1:
+                continue
+            videofile = pieces[0]
 
-        # Handle rotation
-        rot = None
-        if pieces[1].startswith('r'):
-            rot, pieces[1] = re.split('[,\s]+', pieces[1], maxsplit=1)
+            # Handle rotation
+            rot = None
+            if pieces[1].startswith('r'):
+                rot, pieces[1] = re.split('[,\s]+', pieces[1], maxsplit=1)
 
-        segments = [x.lower() for x in re.split('\s*,\s*', pieces[1])]
+            segments = [x.lower() for x in re.split('\s*,\s*', pieces[1])]
 
-        if 'x' in segments:
-            continue
+            if 'x' in segments:
+                continue
 
-        for segment in segments:
-            if segment == 'a' or segment == 'all':
-                elements.append((videofile, '00:00:00', 'end', rot))
-                break
-        else:
             for segment in segments:
-                start, end = canonicalize_startend(re.split('\s*-\s*', segment))
-                elements.append((videofile, start, end, rot))
+                if segment == 'a' or segment == 'all':
+                    elements.append((videofile, '00:00:00', 'end', rot))
+                    break
+            else:
+                for segment in segments:
+                    start, end = canonicalize_startend(re.split('\s*-\s*', segment))
+                    elements.append((videofile, start, end, rot))
 
-with open('segments.txt', 'w') as fp:
-    for i, element in enumerate(elements):
-        videofile, start, end, rot = element
-        fp.write('file ' + 'segment-{:03d}.mp4'.format(i) + '\n')
+    with open('segments.txt', 'w') as fp:
+        for i, element in enumerate(elements):
+            videofile, start, end, rot = element
+            fp.write('file ' + 'segment-{:03d}.mp4'.format(i) + '\n')
 
-with open('buildvideo.bash', 'w') as fp:
-    fp.write('#!/bin/bash' + '\n')
-    for i, element in enumerate(elements):
-        videofile, start, end, rot = element
-        fp.write(make_ffmpeg_cmd(videofile, (start, end), i, rot) + '\n')
-    concat_cmd = """ ffmpeg -f concat -i segments.txt -c:a copy -c:v libx264 -metadata:s:v:0 rotate=0 output.mp4 """
-    fp.write(concat_cmd + '\n')
+    with open('buildvideo.bash', 'w') as fp:
+        fp.write('#!/bin/bash' + '\n')
+        for i, element in enumerate(elements):
+            videofile, start, end, rot = element
+            fp.write(make_ffmpeg_cmd(videofile, (start, end), i, rot) + '\n')
+        concat_cmd = """ ffmpeg -f concat -i segments.txt -c:a copy -c:v libx264 -metadata:s:v:0 rotate=0 output.mp4 """
+        fp.write(concat_cmd + '\n')
 
-os.chmod('buildvideo.bash', 0o755)
+    os.chmod('buildvideo.bash', 0o755)
+
+if __name__ == '__main__':
+    generate_buildvideo_script(LISTFILE)
