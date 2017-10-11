@@ -14,8 +14,7 @@ video04.mp4 all
 # Create videolist.txt from videos in ./footage/
 ./makevideolist.bash > videolist.txt
 
-# Edit videolist.txt and select segments, rearrange order as we desire
-# See example above for syntax
+# Edit videolist.txt and select segments, rearrange order as we desire. See example above for syntax
 vim videolist.txt
 
 # Generate script containing ffmpeg commands
