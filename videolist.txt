@@ -1,0 +1,6 @@
+# Examples:
+#
+# video01.mp4 x
+# video02.3gp 00:00-00:42
+# video03.mp4 0:22-1:10, 01:14-end
+# video04.mp4 all
