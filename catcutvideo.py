@@ -51,7 +51,7 @@ def make_ffmpeg_cmd(videofile, timetup, N, rot):
     vf_array = []
     if RESOLUTION != 'SAME':
         vf_array = ['scale=' + RESOLUTION.replace('x', ':')]
-        codec = 'libx264'
+        codec = 'h264'
 
     meta_txt = ''
     if rot == 'rm0':
@@ -66,21 +66,21 @@ def make_ffmpeg_cmd(videofile, timetup, N, rot):
     if rot == 'r90':
         vf_array += ['transpose=clock']
         meta_txt = '-metadata:s:v:0 rotate=0'
-        codec = 'libx264'
+        codec = 'h264'
     if rot == 'r180':
         vf_array += ['transpose=cclock', 'transpose=clock']
         meta_txt = '-metadata:s:v:0 rotate=0'
-        codec = 'libx264'
+        codec = 'h264'
     if rot == 'r270':
         vf_array += ['transpose=cclock_flip']
         meta_txt = '-metadata:s:v:0 rotate=0'
-        codec = 'libx264'
+        codec = 'h264'
 
     vf_txt = ''
     if vf_array:
         vf_txt = '-vf "{}"'.format(','.join(vf_array))
 
-    cmd = """ ffmpeg -i {} -ss {} {} -c:a copy -c:v {} {} {} segment-{:03d}.mp4 """.format(vpath(videofile), start, end_txt, codec, vf_txt, meta_txt, N)
+    cmd = """ ffmpeg -i {} -r 30 -ss {} {} -c:a copy -c:v {} {} {} segment-{:03d}.mp4 """.format(vpath(videofile), start, end_txt, codec, vf_txt, meta_txt, N)
     return cmd
 
 def generate_buildvideo_script(listfile):
@@ -126,7 +126,7 @@ def generate_buildvideo_script(listfile):
         for i, element in enumerate(elements):
             videofile, start, end, rot = element
             fp.write(make_ffmpeg_cmd(videofile, (start, end), i, rot) + '\n')
-        concat_cmd = """ ffmpeg -f concat -i segments.txt -c:a copy -c:v libx264 -metadata:s:v:0 rotate=0 output.mp4 """
+        concat_cmd = """ ffmpeg -f concat -i segments.txt -r 30 -c:a aac -c:v h264 -metadata:s:v:0 rotate=0 output.mp4 """
         fp.write(concat_cmd + '\n')
 
     os.chmod('buildvideo.bash', 0o755)

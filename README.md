@@ -25,5 +25,7 @@ vim videolist.txt
 ```
 
 # FFMPEG Version
-This script is tested using `ffmpeg version 2.8.11-0ubuntu0.16.04.1` from the Ubuntu 16.04 repo.
-I intend to keep it compatible with the latest Ubuntu LTS release's ffmpeg going forward.
+This script is tested using `ffmpeg version 3.3.4` from the following Ubuntu PPA:
+    https://launchpad.net/~jonathonf/+archive/ubuntu/ffmpeg-3
+
+I intend to keep it compatible with the latest ffmpeg going forward.
